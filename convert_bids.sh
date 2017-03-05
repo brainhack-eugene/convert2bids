@@ -2,7 +2,7 @@
 #
 # This script will convert your directory structure
 # with already dicom mcverted images (gzipped niftis)
-# to BIDS specification
+# to BIDS specification - TC
 
 # Set folder names
 inputdir="/Volumes/psych-cog/dsnlab/BIDS"
