@@ -48,12 +48,17 @@ if not args.outfile:
 ### DATA MUNGING
 # Rename: replace DICOM field labels with BIDS compatible labels
 replaceNames = {
-	'Repetition time (ms)':'RepetitionTime',
-	'Series description': 'TaskName'
+	'Repetition time (ms)': 'RepetitionTime',
+	'Series description': 'TaskName',
+	'Effective echo spacing (ms)': 'EffectiveEchoSpacing',
+	'Model name': 'ManufacturersModelName',
+	'Echo time[1] (ms)': 'EchoTime',
+	'Acceleration factor': 'MultibandAccelerationFactor',
+	'Flip angle': 'FlipAngle'
 }
 
 # Filter: include only the fields in the following list
-fieldShortlist = ['Series UID','TaskName','RepetitionTime']
+fieldShortlist = ['Series UID','TaskName','RepetitionTime','EffectiveEchoSpacing','Manufacturer','ManufacturersModelName','EchoTime','MultibandAccelerationFactor','FlipAngle']
 
 # Conversions: modify values as needed, e.g., unit conversions
 def milliToSec(ms):
