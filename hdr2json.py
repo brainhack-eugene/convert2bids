@@ -1,3 +1,6 @@
+#
+# Runs in Python v2.7
+
 ### LIBRARIES
 # functionality to handle command line arguments
 import argparse
@@ -22,7 +25,7 @@ inHelp  = "filename of the input DICOM header file with either an absolute "
 inHelp += "or a relative path" 
 parser.add_argument("-i","--infile",required=True,help=inHelp)
 
-outHelp  = "(optoinal) filename of the output json file with either an absolute "
+outHelp  = "(optional) filename of the output json file with either an absolute "
 outHelp += "or a relative path; if no output filename is provided, one will be "
 outHelp += "created from the input filename." 
 parser.add_argument("-o","--outfile",help=outHelp)
@@ -35,7 +38,8 @@ parser.add_argument("-v","--verbose", help=verboseHelp, action="store_true")
 
 # Parse command line arguments
 args = parser.parse_args()
-if args.verbose: print 'Command line arguments: \n  ',args
+if args.verbose: 
+	print "Command line arguments: \n ",args
 
 if not args.outfile: 
 	args.outfile = args.infile.replace('.txt','.json')
@@ -44,19 +48,24 @@ if not args.outfile:
 ### DATA MUNGING
 # Rename: replace DICOM field labels with BIDS compatible labels
 replaceNames = {
-	'Repetition time (ms)':'RepetitionTime'
+	'Repetition time (ms)':'RepetitionTime',
+	'Series description': 'TaskName'
 }
 
 # Filter: include only the fields in the following list
-fieldShortlist = ['Series UID','Series description','RepetitionTime']
+fieldShortlist = ['Series UID','TaskName','RepetitionTime']
 
 # Conversions: modify values as needed, e.g., unit conversions
 def milliToSec(ms):
 	return 1.0*ms/1000
 
+def makeTaskName(oldName):
+	parts= oldName.split('_')
+	return 'task-' + parts[0] + '_run-0' + parts[1]
+
 conversions = {}
 conversions['RepetitionTime']=milliToSec
-
+conversions['TaskName']=makeTaskName
 
 ### PROCESSING
 # Read the input file
@@ -66,7 +75,10 @@ with open(args.infile, 'rb') as hdrFile:
 	for line in hdrFile:
 		key,value = line.strip().split(':')
 		# rename any fields in the lookup table
-		if key in replaceNames: key = replaceNames[key]
+		print key, replaceNames
+		if key in replaceNames: 
+			key = replaceNames[key]
+			print 'replaced key name', key
 		# only record the desired fields
 		if key in fieldShortlist:
 			# ensure numbers are numbers
@@ -76,11 +88,12 @@ with open(args.infile, 'rb') as hdrFile:
 				temp = value.strip()
 			if args.verbose: print key,temp
 			# apply conversion, as needed
+			print key, conversions
 			if key in conversions:
 				if args.verbose: print 'Performing conversion',conversions[key]
 				acc[key] = conversions[key](temp)
 			else:
-				acc[key] = temp	
+				acc[key] = temp
 
 with open(args.outfile, 'wb') as jsonFile:
 	json.dump(acc,jsonFile,indent=1)
